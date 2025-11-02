@@ -1,0 +1,6 @@
+1. Make background disco-like and alternate pallets.
+2. Add background music It Ain't Me by Kygo and Selena Gomez
+3. Add dancing stick figures on the side somewhere.
+4. Change images.
+5. Make a screen when the name entered is not "Sahasra" (not case-sensitive)
+6. Make that second screen an edit of anything chosen from a new dropdown on the intro page.
