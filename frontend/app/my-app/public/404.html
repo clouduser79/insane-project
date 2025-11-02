@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting...</title>
+    <meta http-equiv="refresh" content="0; url=./" />
+  </head>
+  <body>
+    <p>Redirecting to the app...</p>
+    <script>
+      // For SPA routing on GitHub Pages
+      const redirect = () => {
+        const loc = window.location;
+        const path = loc.pathname.replace(/404\.html$/, '');
+        loc.replace(path + (loc.search || '') + (loc.hash || ''));
+      };
+      redirect();
+    </script>
+  </body>
+</html>
