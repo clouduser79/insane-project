@@ -1,0 +1,23 @@
+{
+  "components": [
+    {
+      "id": "map-view",
+      "name": "MapView",
+      "description": "Interactive map component for displaying city improvements and markers.",
+      "props": {
+        "center": { "type": "[number, number]", "description": "Latitude and longitude pair." },
+        "zoom": { "type": "number", "description": "Initial zoom level." },
+        "markers": { "type": "array", "description": "Array of marker objects with id, lat, lng, and meta." }
+      }
+    },
+    {
+      "id": "improvement-list",
+      "name": "ImprovementList",
+      "description": "List view for city improvements with filtering and pagination.",
+      "props": {
+        "items": { "type": "array", "description": "Array of improvement items." },
+        "pageSize": { "type": "number", "description": "Items per page." }
+      }
+    }
+  ]
+}
