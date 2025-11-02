@@ -26,13 +26,13 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v4
+        uses: actions/jekyll-build-pages@v1
         with:
           source: ./frontend/app
           destination: ./_site
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3  # <-- updated here
+        uses: actions/upload-pages-artifact@v3
 
   deploy:
     environment:
