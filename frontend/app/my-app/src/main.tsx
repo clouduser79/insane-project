@@ -266,7 +266,7 @@ const playMusicOnce = async (
   if (!isStarted) {
     return (
       <>
-        <SparkleBackground startTime={startTime} defaultPalette={6} />
+        <SparkleBackground startTime={startTime} defaultPalette={6} forcePalette={6} />
         <main className="container intro">
         <h1>Upload images to make a presentation with music and effects!</h1>
         <form onSubmit={handleSubmit} className="name-form">

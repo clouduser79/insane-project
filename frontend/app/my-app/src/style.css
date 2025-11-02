@@ -14,10 +14,12 @@
 }
 
 /* Disable animations and sparkles for palette 6 */
-.sparkle-bg.palette-6 {
+.sparkle-bg.palette-6,
+.palette-6 {
   animation: none;
 }
-.sparkle-bg.palette-6 .sparkle {
+.sparkle-bg.palette-6 .sparkle,
+.palette-6 .sparkle {
   display: none;
 }
 
