@@ -91,12 +91,21 @@ const playMusicOnce = async (
 ) => {
   try {
     const ctx = new AudioContext();
-    let response = await fetch('/static/background.mp3');
-    if (!response.ok) {
-      // Fallback to root public path if static folder isn't used
-      response = await fetch('/background.mp3');
+    const base = (import.meta as any).env?.BASE_URL || '/';
+    const candidates = [
+      `${base}static/background.mp3`,
+      `${base}background.mp3`,
+    ];
+    let response: Response | null = null;
+    for (const url of candidates) {
+      try {
+        const r = await fetch(url);
+        if (r.ok) { response = r; break; }
+      } catch (_) {
+        // try next candidate
+      }
     }
-    if (!response.ok) throw new Error('Could not load music file');
+    if (!response) throw new Error('Could not load music file');
 
     const arrayBuffer = await response.arrayBuffer();
     const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
