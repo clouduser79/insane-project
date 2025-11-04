@@ -84,6 +84,7 @@ function App() {
   const [audioError, setAudioError] = useState<string | null>(null);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [forcePalette, setForcePalette] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 const playMusicOnce = async (
   onEnd: () => void,
@@ -130,10 +131,22 @@ const playMusicOnce = async (
   }
 };
 
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    const fileArr = Array.from(files).slice(0, 5 - uploadedImages.length);
+    const selected = Array.from(files);
+    const newTotal = uploadedImages.length + selected.length;
+    if (newTotal > 20) {
+      alert('You can upload up to 20 images. Your selections have been cleared.');
+      setUploadedImages([]);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    const limit = Math.min(20 - uploadedImages.length, selected.length);
+    const fileArr = selected.slice(0, limit);
     const readers = fileArr.map(file => {
       return new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
@@ -142,8 +155,11 @@ const playMusicOnce = async (
         reader.readAsDataURL(file);
       });
     });
-    Promise.all(readers).then(imgs => {
-      setUploadedImages(prev => [...prev, ...imgs].slice(0, 5));
+    Promise.all(readers).then((imgs) => {
+      setUploadedImages(prev => {
+        const remaining = 20 - prev.length;
+        return [...prev, ...imgs.slice(0, remaining)];
+      });
     });
   };
 
@@ -151,13 +167,19 @@ const playMusicOnce = async (
     e.preventDefault();
     setShowImageWarning(false);
     if (!name.trim()) {
-      alert('Please enter your name first!');
+      alert('Please enter a message first!');
       return;
     }
     if (uploadedImages.length === 0) {
       setShowImageWarning(true);
       return;
     }
+    if (uploadedImages.length <= 1) {
+      alert('Please upload at least 2 images.');
+      return;
+    }
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const ctx = await playMusicOnce(() => {
         setForcePalette(6);
@@ -278,13 +300,14 @@ const playMusicOnce = async (
           />
           <div className="file-upload-container">
             <label>
-              <span>Upload up to 5 images:</span>
+              <span>Upload up to 20 images:</span>
               <input
                 type="file"
                 accept="image/*"
                 multiple
                 onChange={handleImageUpload}
-                disabled={uploadedImages.length >= 5}
+                disabled={uploadedImages.length >= 20}
+                ref={fileInputRef}
               />
             </label>
             {showImageWarning && (
@@ -298,7 +321,7 @@ const playMusicOnce = async (
               <img key={i} src={img} alt={`upload-${i + 1}`} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6, border: '1.5px solid #ccc' }} />
             ))}
           </div>
-          <button type="submit">Submit</button>
+          <button type="submit" disabled={isSubmitting}>Submit</button>
         </form>
         </main>
       </>
