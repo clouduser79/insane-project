@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: "pages"
   cancel-in-progress: true
 
 jobs:
@@ -23,16 +23,35 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          # Optional: enable once stable; remove if it errors again
+          # cache: 'npm'
+          # cache-dependency-path: frontend/package-lock.json
+
+      - name: Determine BASE_PATH
+        id: basepath
+        run: |
+          REPO_NAME="${{ github.event.repository.name }}"
+          OWNER_LOWER="${{ github.repository_owner }}"
+          OWNER_SITE="${OWNER_LOWER}.github.io"
+          if [ "$REPO_NAME" = "$OWNER_SITE" ]; then
+            echo "base=/" >> $GITHUB_OUTPUT
+          else
+            echo "base=/${REPO_NAME}/" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install
         run: npm ci
+
       - name: Build
-        run: npm run build
         env:
-          BASE_PATH: /insane-project/
+          BASE_PATH: ${{ steps.basepath.outputs.base }}
+        run: npm run build
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
