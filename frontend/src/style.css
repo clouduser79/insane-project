@@ -2,18 +2,15 @@
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: transparent;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Disable animations and sparkles for palette 6 */
 .sparkle-bg.palette-6,
 .palette-6 {
   animation: none;
@@ -240,19 +237,18 @@ button {
 }
 
 .container.intro {
-  /* make the intro visually larger */
   transform: none;
   position: relative;
   z-index: 1;
 }
 
 .container.intro h1 {
-  font-size: 2.5rem; /* ~2x of the compact base */
+  font-size: 2.5rem;
   line-height: 1.15;
   margin-bottom: 1rem;
 }
 .container.intro img {
-  width: 320px; /* larger image for intro (2x of 160) */
+  width: 320px;
 }
 .container.intro input,
 .container.intro button {
@@ -260,7 +256,6 @@ button {
   padding: 0.75rem 1.25rem;
 }
 
-/* Center the name form and constrain the input width for visual balance */
 .container.intro .name-form {
   display: flex;
   flex-direction: column;
@@ -268,6 +263,7 @@ button {
   gap: 0.6rem;
   width: 100%;
 }
+
 .container.intro .name-form input {
   width: 86%;
   max-width: 360px;
@@ -277,7 +273,6 @@ button {
   min-width: 120px;
 }
 
-/* File input styling */
 .file-upload-container {
   margin: 0.5rem 0 0 0;
   width: 100%;
@@ -301,7 +296,6 @@ button {
   background-color: #2d3748;
 }
 
-/* Hide the default file input text */
 .file-input::-webkit-file-upload-button {
   visibility: hidden;
   width: 0;
@@ -331,24 +325,22 @@ button {
 }
 
 .container.presentation h1 {
-  font-size: 1.875rem; /* ~1.5x of compact base */
+  font-size: 1.875rem;
   margin-bottom: 0.6rem;
 }
 .container.presentation img {
-  width: 260px; /* 1.5x of the base 160px image plus 10px each side (total +20px) */
+  width: 260px;
 }
 .container.presentation p {
   font-size: 1rem;
 }
 
-/* Keep transitions smooth when scaling between screens */
 .container h1,
 .container img,
 .container p {
   transition: all 220ms ease-in-out;
 }
 
-/* Sparkling animated background with spectrum colors */
 .sparkle-bg {
   position: fixed;
   top: 0; left: 0; width: 100vw; height: 100vh;
@@ -359,102 +351,99 @@ button {
   background-size: 400% 400%;
 }
 
-/* Color schemes for different intervals */
 .sparkle-bg.palette-1 {
   background: linear-gradient(
     45deg,
-    #1a4b82 0%,    /* dark metallic blue */
-    #993366 20%,   /* dark metallic pink */
-    #992222 40%,   /* dark metallic red */
-    #995500 60%,   /* dark metallic orange */
-    #1f593a 80%,   /* dark metallic green */
-    #1a4b82 100%   /* back to blue */
+    #1a4b82 0%,
+    #993366 20%,
+    #992222 40%,
+    #995500 60%,
+    #1f593a 80%,
+    #1a4b82 100%
   );
 }
 
 .sparkle-bg.palette-2 {
   background: linear-gradient(
     45deg,
-    #4b0082 0%,    /* indigo */
-    #800080 20%,   /* purple */
-    #483d8b 40%,   /* dark slate blue */
-    #4682b4 60%,   /* steel blue */
-    #00ced1 80%,   /* dark turquoise */
-    #4b0082 100%   /* back to indigo */
+    #4b0082 0%,
+    #800080 20%,
+    #483d8b 40%,
+    #4682b4 60%,
+    #00ced1 80%,
+    #4b0082 100%
   );
 }
 
 .sparkle-bg.palette-3 {
   background: linear-gradient(
     45deg,
-    #2f4f4f 0%,    /* dark slate gray */
-    #008080 20%,   /* teal */
-    #20b2aa 40%,   /* light sea green */
-    #48d1cc 60%,   /* medium turquoise */
-    #40e0d0 80%,   /* turquoise */
-    #2f4f4f 100%   /* back to dark slate gray */
+    #2f4f4f 0%,
+    #008080 20%,
+    #20b2aa 40%,
+    #48d1cc 60%,
+    #40e0d0 80%,
+    #2f4f4f 100%
   );
 }
 
 .sparkle-bg.palette-4 {
   background: linear-gradient(
     45deg,
-    #8b4513 0%,    /* saddle brown */
-    #d2691e 20%,   /* chocolate */
-    #cd853f 40%,   /* peru */
-    #daa520 60%,   /* goldenrod */
-    #f4a460 80%,   /* sandy brown */
-    #8b4513 100%   /* back to saddle brown */
+    #8b4513 0%,
+    #d2691e 20%,
+    #cd853f 40%,
+    #daa520 60%,
+    #f4a460 80%,
+    #8b4513 100%
   );
 }
 
 .sparkle-bg.palette-5 {
   background: linear-gradient(
     45deg,
-    #000000 0%,    /* black */
-    #000080 20%,   /* navy blue */
-    #228b22 40%,   /* forest green */
-    #716000 60%,   /* gold */
-    #c0c0c08e 80%,   /* silver */
-    #000000 100%   /* back to black */
+    #000000 0%,
+    #000080 20%,
+    #228b22 40%,
+    #716000 60%,
+    #c0c0c08e 80%,
+    #000000 100%
   );
 }
 
-/* Intro palette: black, navy blue, forest green */
 .palette-6 {
   background: linear-gradient(
     45deg,
-    #000000 0%,   /* black */
-    #000080 50%,  /* navy blue */
-    #228b22 100%  /* forest green */
+    #000000 0%,
+    #000080 50%,
+    #228b22 100%
   );
 }
 
 .palette-7 {
   background: linear-gradient(
     45deg,
-    #6C3BAA 0%,   /* purple */
-    #4f0080 20%,  /* purple */
-    #35063E 40%,  /* purple */
-    #6C3BAA 60%,  /* purple */
-    #4f0080 80%,  /* purple */
-    #35063E 100%  /* purple */
+    #6C3BAA 0%,
+    #4f0080 20%,
+    #35063E 40%,
+    #6C3BAA 60%,
+    #4f0080 80%,
+    #35063E 100%
   );
 }
 
 .palette-8 {
   background: linear-gradient(
     45deg,
-    #000000 0%,    /* black */
-    #8B0000 20%,   /* dark red */
-    #B22222 40%,   /* firebrick red */
-    #8B0000 60%,   /* dark red */
-    #000000 80%,   /* black */
-    #8B0000 100%   /* dark red */
+    #000000 0%,
+    #8B0000 20%,
+    #B22222 40%,
+    #8B0000 60%,
+    #000000 80%,
+    #8B0000 100%
   );
 }
 
-/* Common animations for palettes except 6 (intro) */
 .sparkle-bg[class*="palette-"]:not(.palette-6) {
   animation: spectrum-shift 15s infinite linear, color-pulse 2.5s infinite ease-in-out;
 }
@@ -486,7 +475,7 @@ button {
   position: relative;
   z-index: 1;
   padding: 3rem;
-  max-width: 630px; /* 1.5x the original 420px */
+  max-width: 630px;
   width: 95%;
   backdrop-filter: blur(8px);
   border: 2px solid rgba(255, 255, 255, 0.1);
@@ -574,8 +563,6 @@ button {
   transform: rotate(2deg);
   z-index: -1;
 }
-
-
 
 .sparkle {
   position: absolute;

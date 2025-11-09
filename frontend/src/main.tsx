@@ -2,23 +2,20 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import './style.css';
 
-// No default images needed
 const IMAGES: string[] = [];
 
 function SparkleBackground({ count = 50, startTime, defaultPalette = 1, forcePalette }: { count?: number, startTime: number | null, defaultPalette?: number, forcePalette?: number }) {
   const [currentPalette, setCurrentPalette] = useState(defaultPalette);
 
-  // If forcePalette is provided, immediately apply it and skip timed updates
   useEffect(() => {
     if (typeof forcePalette === 'number') {
       if (currentPalette !== forcePalette) setCurrentPalette(forcePalette);
     }
   }, [forcePalette, currentPalette]);
 
-  // Handle color scheme changes at specified intervals
   useEffect(() => {
     if (!startTime) return;
-    if (typeof forcePalette === 'number') return; // frozen by force
+    if (typeof forcePalette === 'number') return;
 
     const updatePalette = () => {
       const elapsed = Date.now() - startTime;
@@ -42,7 +39,6 @@ function SparkleBackground({ count = 50, startTime, defaultPalette = 1, forcePal
     return () => clearInterval(interval);
   }, [startTime, currentPalette, forcePalette]);
 
-  // Generate random sparkles on mount
   const [sparkles] = useState(() =>
     Array.from({ length: count }, (_, i) => ({
       id: i,
@@ -81,7 +77,6 @@ function App() {
   const [showImageWarning, setShowImageWarning] = useState(false);
   const [cycleSpeed, setCycleSpeed] = useState(1000);
   const [startTime, setStartTime] = useState<number | null>(null);
-
   const [audioError, setAudioError] = useState<string | null>(null);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [forcePalette, setForcePalette] = useState<number | null>(null);
@@ -90,7 +85,6 @@ function App() {
   const [selectedSong, setSelectedSong] = useState<string>('');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Function to reset the form to its initial state
   const resetForm = () => {
     setUploadedImages([]);
     setSelectedSong('');
@@ -98,14 +92,12 @@ function App() {
     setShowImageWarning(false);
     setCurrentIndex(0);
     setFade(true);
-    setIsSubmitting(false); // Reset submitting state
-    // Clear the file input if it exists
+    setIsSubmitting(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  // Handle end of presentation
   const handleEnd = () => {
     setForcePalette(6);
     setStartTime(null);
@@ -113,74 +105,70 @@ function App() {
     resetForm();
   };
 
-const availableSongs = [
-  'MONTAGEM XONADA.mp3',
-  'MONTAGEM CORACAO.mp3',
-  'MONTAGEM DIREÇÃO.mp3',
-  'NO BATIDÃO.mp3',
-  'TE CONOCÍ.mp3',
-  'VAI VAI TRAIR.mp3'
-];
+  const availableSongs = [
+    'MONTAGEM XONADA.mp3',
+    'MONTAGEM CORACAO.mp3',
+    'MONTAGEM DIREÇÃO.mp3',
+    'NO BATIDÃO.mp3',
+    'TE CONOCÍ.mp3',
+    'VAI VAI TRAIR.mp3'
+  ];
 
-const getRandomSong = () => {
-  const randomIndex = Math.floor(Math.random() * availableSongs.length);
-  return availableSongs[randomIndex];
-};
+  const getRandomSong = () => {
+    const randomIndex = Math.floor(Math.random() * availableSongs.length);
+    return availableSongs[randomIndex];
+  };
 
-const playMusicOnce = async (
-  onEnd: () => void,
-  setAudioError: (msg: string | null) => void,
-  songName: string = ''
-) => {
-  try {
-    const ctx = new AudioContext();
-    const base = (import.meta as any).env?.BASE_URL || '/';
-    const songToPlay = songName || getRandomSong();
-    setCurrentSong(songToPlay);
-    
-    const candidates = [
-      `${base}static/${songToPlay}`,
-      `${base}${songToPlay}`,
-      `./static/${songToPlay}`,
-      `/${songToPlay}`,
-      songToPlay
-    ];
-    
-    let response: Response | null = null;
-    for (const url of candidates) {
-      try {
-        const r = await fetch(url);
-        if (r.ok) { response = r; break; }
-      } catch (_) {
-        // try next candidate
+  const playMusicOnce = async (
+    onEnd: () => void,
+    setAudioError: (msg: string | null) => void,
+    songName: string = ''
+  ) => {
+    try {
+      const ctx = new AudioContext();
+      const base = (import.meta as any).env?.BASE_URL || '/';
+      const songToPlay = songName || getRandomSong();
+      setCurrentSong(songToPlay);
+      
+      const candidates = [
+        `${base}static/${songToPlay}`,
+        `${base}${songToPlay}`,
+        `./static/${songToPlay}`,
+        `/${songToPlay}`,
+        songToPlay
+      ];
+      
+      let response: Response | null = null;
+      for (const url of candidates) {
+        try {
+          const r = await fetch(url);
+          if (r.ok) { response = r; break; }
+        } catch (_) {}
       }
+      if (!response) throw new Error('Could not load music file');
+
+      const arrayBuffer = await response.arrayBuffer();
+      const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+
+      const source = ctx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(ctx.destination);
+      source.start(0);
+
+      source.onended = () => {
+        console.log('Music finished playing.');
+        ctx.close();
+        onEnd();
+      };
+
+      setAudioError(null);
+      return ctx;
+    } catch (err) {
+      console.error('Audio playback error:', err);
+      setAudioError('Unable to play background music. Please click anywhere to try again.');
+      return null;
     }
-    if (!response) throw new Error('Could not load music file');
-
-    const arrayBuffer = await response.arrayBuffer();
-    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-
-    const source = ctx.createBufferSource();
-    source.buffer = audioBuffer;
-    source.connect(ctx.destination);
-    source.start(0);
-
-    source.onended = () => {
-      console.log('Music finished playing.');
-      ctx.close();
-      onEnd(); // trigger slideshow pause + button
-    };
-
-    setAudioError(null);
-    return ctx;
-  } catch (err) {
-    console.error('Audio playback error:', err);
-    setAudioError('Unable to play background music. Please click anywhere to try again.');
-    return null;
-  }
-};
-
-  // fileInputRef is already declared above
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -212,7 +200,6 @@ const playMusicOnce = async (
       });
     });
     
-    // Clear the file input after processing
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -250,7 +237,7 @@ const playMusicOnce = async (
       console.error('Failed to start music:', err);
       setStartTime(Date.now());
       setIsStarted(true);
-      setIsSubmitting(false); // Ensure submitting state is reset on error
+      setIsSubmitting(false);
       return false;
     }
   };
@@ -274,17 +261,15 @@ const playMusicOnce = async (
     }
     
     try {
-      // Start the experience with the selected song or a random one
       const songToPlay = selectedSong || getRandomSong();
       await startExperience(songToPlay);
     } catch (err) {
       console.error('Error starting experience:', err);
-      setIsSubmitting(false); // Ensure submitting state is reset on error
+      setIsSubmitting(false);
     }
   };
 
   const allImages = uploadedImages.length > 0 ? [...uploadedImages, ...IMAGES] : IMAGES;
-
   const allImagesRef = React.useRef(allImages);
   React.useEffect(() => { allImagesRef.current = allImages; }, [allImages]);
 
@@ -293,7 +278,6 @@ const playMusicOnce = async (
 
   const lastAdvanceRef = React.useRef(Date.now());
 
-  // Adjust cycle speed over time
   useEffect(() => {
     if (!startTime) return;
 
@@ -319,14 +303,13 @@ const playMusicOnce = async (
     return () => clearInterval(id);
   }, [startTime]);
 
-  // ✅ Updated slideshow logic
   useEffect(() => {
     if (!(isStarted && startTime)) return;
 
-    const fadeDuration = 200; // ms
+    const fadeDuration = 200;
     const advanceTimeoutRef = { id: null as number | null };
     const isFadingRef = { val: false };
-    const tickInterval = 100; // check 10x/sec
+    const tickInterval = 100;
 
     lastAdvanceRef.current = lastAdvanceRef.current || Date.now();
 
@@ -386,7 +369,7 @@ const playMusicOnce = async (
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Enter a message: "
+              placeholder="Enter a message: " 
               className="name-input"
             />
             <div className="music-selector">
@@ -498,4 +481,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
-);
+)
