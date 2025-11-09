@@ -24,10 +24,12 @@ function SparkleBackground({ count = 50, startTime, defaultPalette = 1, forcePal
       const elapsed = Date.now() - startTime;
       let newPalette = 1;
 
-      if (elapsed >= 204000) newPalette = 5;      // 204 seconds
-      else if (elapsed >= 118000) newPalette = 4; // 118 seconds
-      else if (elapsed >= 96000) newPalette = 3;  // 96 seconds
-      else if (elapsed >= 38000) newPalette = 2;  // 38 seconds
+      if (elapsed >= 87000) newPalette = 8;       // 87 seconds
+      else if (elapsed >= 74000) newPalette = 7;  // 74 seconds
+      else if (elapsed >= 60000) newPalette = 5;  // 60 seconds
+      else if (elapsed >= 45000) newPalette = 4;  // 45 seconds
+      else if (elapsed >= 30000) newPalette = 3;  // 30 seconds
+      else if (elapsed >= 15000) newPalette = 2;  // 15 seconds
 
       if (newPalette !== currentPalette) {
         setCurrentPalette(newPalette);
@@ -71,7 +73,6 @@ function SparkleBackground({ count = 50, startTime, defaultPalette = 1, forcePal
 }
 
 function App() {
-  const [userName, setUserName] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isStarted, setIsStarted] = useState(false);
   const [name, setName] = useState('');
@@ -85,18 +86,66 @@ function App() {
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [forcePalette, setForcePalette] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentSong, setCurrentSong] = useState<string>('');
+  const [selectedSong, setSelectedSong] = useState<string>('');
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Function to reset the form to its initial state
+  const resetForm = () => {
+    setUploadedImages([]);
+    setSelectedSong('');
+    setName('');
+    setShowImageWarning(false);
+    setCurrentIndex(0);
+    setFade(true);
+    setIsSubmitting(false); // Reset submitting state
+    // Clear the file input if it exists
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Handle end of presentation
+  const handleEnd = () => {
+    setForcePalette(6);
+    setStartTime(null);
+    setIsStarted(false);
+    resetForm();
+  };
+
+const availableSongs = [
+  'MONTAGEM XONADA.mp3',
+  'MONTAGEM CORACAO.mp3',
+  'MONTAGEM DIREÇÃO.mp3',
+  'NO BATIDÃO.mp3',
+  'TE CONOCÍ.mp3',
+  'VAI VAI TRAIR.mp3'
+];
+
+const getRandomSong = () => {
+  const randomIndex = Math.floor(Math.random() * availableSongs.length);
+  return availableSongs[randomIndex];
+};
 
 const playMusicOnce = async (
   onEnd: () => void,
-  setAudioError: (msg: string | null) => void
+  setAudioError: (msg: string | null) => void,
+  songName: string = ''
 ) => {
   try {
     const ctx = new AudioContext();
     const base = (import.meta as any).env?.BASE_URL || '/';
+    const songToPlay = songName || getRandomSong();
+    setCurrentSong(songToPlay);
+    
     const candidates = [
-      `${base}static/background.mp3`,
-      `${base}background.mp3`,
+      `${base}static/${songToPlay}`,
+      `${base}${songToPlay}`,
+      `./static/${songToPlay}`,
+      `/${songToPlay}`,
+      songToPlay
     ];
+    
     let response: Response | null = null;
     for (const url of candidates) {
       try {
@@ -131,11 +180,12 @@ const playMusicOnce = async (
   }
 };
 
-  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  // fileInputRef is already declared above
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
+    
     const selected = Array.from(files);
     const newTotal = uploadedImages.length + selected.length;
     if (newTotal > 20) {
@@ -161,41 +211,75 @@ const playMusicOnce = async (
         return [...prev, ...imgs.slice(0, remaining)];
       });
     });
+    
+    // Clear the file input after processing
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && name.trim()) {
+      startExperience();
+    }
+  };
+
+  const handleSongChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const song = e.target.value;
+    setSelectedSong(song);
+    if (isStarted) {
+      startExperience(song);
+    }
+  };
+
+  const startExperience = async (songName?: string) => {
+    if (isSubmitting) return false;
+    
+    try {
+      setIsSubmitting(true);
+      const songToPlay = songName || selectedSong || getRandomSong();
+      setCurrentSong(songToPlay);
+      
+      const ctx = await playMusicOnce(handleEnd, setAudioError, songToPlay);
+      if (ctx) setAudioContext(ctx);
+      setForcePalette(null);
+      setStartTime(Date.now());
+      setIsStarted(true);
+      return true;
+    } catch (err) {
+      console.error('Failed to start music:', err);
+      setStartTime(Date.now());
+      setIsStarted(true);
+      setIsSubmitting(false); // Ensure submitting state is reset on error
+      return false;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setShowImageWarning(false);
-    if (!name.trim()) {
-      alert('Please enter a message first!');
-      return;
+
+    if (name.trim() === '') {
+      const displayName = name.trim() || 'No message provided';
+      setName(displayName);
     }
+    
     if (uploadedImages.length === 0) {
       setShowImageWarning(true);
       return;
     }
-    if (uploadedImages.length <= 1) {
+    if (uploadedImages.length < 2) {
       alert('Please upload at least 2 images.');
       return;
     }
-    if (isSubmitting) return;
-    setIsSubmitting(true);
+    
     try {
-      const ctx = await playMusicOnce(() => {
-        setForcePalette(6);
-        setStartTime(null);
-        setIsStarted(false);
-      }, setAudioError);
-      if (ctx) setAudioContext(ctx);
-      setForcePalette(null);
-      setStartTime(Date.now());
-      setUserName(name);
-      setIsStarted(true);
+      // Start the experience with the selected song or a random one
+      const songToPlay = selectedSong || getRandomSong();
+      await startExperience(songToPlay);
     } catch (err) {
-      console.error('Failed to start music:', err);
-      setStartTime(Date.now());
-      setUserName(name);
-      setIsStarted(true);
+      console.error('Error starting experience:', err);
+      setIsSubmitting(false); // Ensure submitting state is reset on error
     }
   };
 
@@ -215,13 +299,17 @@ const playMusicOnce = async (
 
     const check = () => {
       const elapsed = Date.now() - startTime;
-      if (elapsed >= 204000) {
+      if (elapsed >= 87000) {
         setCycleSpeed(1000);
-      } else if (elapsed >= 118000) {
+      } else if (elapsed >= 74000) {
         setCycleSpeed(500);
-      } else if (elapsed >= 96000) {
+      } else if (elapsed >= 60000) {
         setCycleSpeed(1000);
-      } else if (elapsed >= 38000) {
+      } else if (elapsed >= 45000) {
+        setCycleSpeed(500);
+      } else if (elapsed >= 30000) {
+        setCycleSpeed(1000);
+      } else if (elapsed >= 15000) {
         setCycleSpeed(500);
       }
     };
@@ -292,22 +380,43 @@ const playMusicOnce = async (
         <main className="container intro">
         <h1>Upload images to make a presentation with music and effects!</h1>
         <form onSubmit={handleSubmit} className="name-form">
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter a message to be displayed"
-          />
+          <div className="name-input-container">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Enter a message: "
+              className="name-input"
+            />
+            <div className="music-selector">
+              <label htmlFor="song-select" className="music-label">Choose Music: </label>
+              <select 
+                id="song-select"
+                value={selectedSong} 
+                onChange={handleSongChange}
+                className="song-select"
+              >
+                <option value="">Random</option>
+                {availableSongs.map((song) => (
+                  <option key={song} value={song}>
+                    {song.replace('.mp3', '')}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
           <div className="file-upload-container">
             <label>
               <span>Upload up to 20 images:</span>
               <input
                 type="file"
+                id="file-upload"
                 accept="image/*"
                 multiple
                 onChange={handleImageUpload}
-                disabled={uploadedImages.length >= 20}
                 ref={fileInputRef}
+                className="file-input"
               />
             </label>
             {showImageWarning && (
@@ -321,7 +430,7 @@ const playMusicOnce = async (
               <img key={i} src={img} alt={`upload-${i + 1}`} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6, border: '1.5px solid #ccc' }} />
             ))}
           </div>
-          <button type="submit" disabled={isSubmitting}>Submit</button>
+          <button type="submit">Submit</button>
         </form>
         </main>
       </>
@@ -341,11 +450,13 @@ const playMusicOnce = async (
                 alt="Presentation"
               />
             </div>
+            <div className="message-container">
+              <p className="presentation-message">
+                ✨ {name} ✨
+              </p>
+            </div>
             <p className="presentation-text">
-              ✨<strong>{userName}</strong>✨
-            </p>
-            <p className="presentation-text">
-              Song Name: "It Ain't Me" by Kygo & Selena Gomez.
+              {currentSong ? `Now Playing: ${currentSong.replace('.mp3', '')}` : 'Loading music...'}
             </p>
             {audioError && (
               <div style={{ color: '#ff5555', fontSize: '0.9em', marginTop: '1em' }}>
