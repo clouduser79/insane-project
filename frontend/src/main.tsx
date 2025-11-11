@@ -21,11 +21,11 @@ function SparkleBackground({ count = 50, startTime, defaultPalette = 1, forcePal
       const elapsed = Date.now() - startTime;
       let newPalette = 1;
 
-      if (elapsed >= 87000) newPalette = 8;       // 87 seconds
+      if (elapsed >= 88000) newPalette = 8;       // 88 seconds
       else if (elapsed >= 74000) newPalette = 7;  // 74 seconds
-      else if (elapsed >= 60000) newPalette = 5;  // 60 seconds
-      else if (elapsed >= 45000) newPalette = 4;  // 45 seconds
-      else if (elapsed >= 30000) newPalette = 3;  // 30 seconds
+      else if (elapsed >= 59000) newPalette = 5;  // 59 seconds
+      else if (elapsed >= 44000) newPalette = 4;  // 44 seconds
+      else if (elapsed >= 29000) newPalette = 3;  // 29 seconds
       else if (elapsed >= 15000) newPalette = 2;  // 15 seconds
 
       if (newPalette !== currentPalette) {
@@ -283,15 +283,15 @@ function App() {
 
     const check = () => {
       const elapsed = Date.now() - startTime;
-      if (elapsed >= 87000) {
+      if (elapsed >= 88000) {
         setCycleSpeed(1000);
       } else if (elapsed >= 74000) {
         setCycleSpeed(500);
-      } else if (elapsed >= 60000) {
+      } else if (elapsed >= 59000) {
         setCycleSpeed(1000);
-      } else if (elapsed >= 45000) {
+      } else if (elapsed >= 44000) {
         setCycleSpeed(500);
-      } else if (elapsed >= 30000) {
+      } else if (elapsed >= 29000) {
         setCycleSpeed(1000);
       } else if (elapsed >= 15000) {
         setCycleSpeed(500);
