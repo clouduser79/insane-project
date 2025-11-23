@@ -72,8 +72,7 @@ A beautiful and interactive web application that transforms your images into stu
 
 The application is fully responsive and works on:
 - Desktop browsers (Chrome, Firefox, Safari, Edge)
-- Tablets
-- Mobile devices
+- Mobile devices (Later release)
 
 ## License
 
