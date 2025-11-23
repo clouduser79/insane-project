@@ -32,17 +32,11 @@ jobs:
           # cache: 'npm'
           # cache-dependency-path: frontend/package-lock.json
 
-      - name: Determine BASE_PATH
+      - name: Set BASE_PATH
         id: basepath
         run: |
-          REPO_NAME="${{ github.event.repository.name }}"
-          OWNER_LOWER="${{ github.repository_owner }}"
-          OWNER_SITE="${OWNER_LOWER}.github.io"
-          if [ "$REPO_NAME" = "$OWNER_SITE" ]; then
-            echo "base=/" >> $GITHUB_OUTPUT
-          else
-            echo "base=/${REPO_NAME}/" >> $GITHUB_OUTPUT
-          fi
+          # For GitHub Pages, the base path should be the repository name
+          echo "base=/insane-project/" >> $GITHUB_OUTPUT
 
       - name: Install
         run: npm ci
@@ -50,12 +44,22 @@ jobs:
       - name: Build
         env:
           BASE_PATH: ${{ steps.basepath.outputs.base }}
-        run: npm run build
+        run: |
+          echo "Building with base path: $BASE_PATH"
+          npm run build
+          
+      - name: List built files
+        run: |
+          ls -la dist/
+          echo "--- index.html ---"
+          cat dist/index.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: frontend/dist
+          # This ensures the root of the repository is the root of the built site
+          name: pages
 
   deploy:
     needs: build
