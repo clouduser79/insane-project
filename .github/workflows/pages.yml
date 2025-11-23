@@ -17,9 +17,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
+    # Remove working-directory to make paths simpler
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,23 +40,28 @@ jobs:
         run: npm ci
 
       - name: Build
+        working-directory: frontend
         env:
           BASE_PATH: ${{ steps.basepath.outputs.base }}
         run: |
           echo "Building with base path: $BASE_PATH"
+          npm ci
           npm run build
           
-      - name: List built files
+      - name: Verify build output
         run: |
-          ls -la dist/
-          echo "--- index.html ---"
-          cat dist/index.html
+          echo "Current directory: $(pwd)"
+          echo "--- Frontend directory contents ---"
+          ls -la frontend/
+          echo "--- Build output ---"
+          ls -la frontend/dist/
+          echo "--- index.html content ---"
+          cat frontend/dist/index.html || echo "No index.html found"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # The path is relative to the working directory (frontend/)
-          path: 'dist'
+          path: 'frontend/dist'
 
   deploy:
     needs: build
