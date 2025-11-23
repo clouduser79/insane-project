@@ -54,19 +54,21 @@ jobs:
           echo "--- index.html ---"
           cat dist/index.html
 
-      - name: Upload Pages artifact
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: frontend/dist
-          # This ensures the root of the repository is the root of the built site
-          name: pages
+          # The path is relative to the working directory (frontend/)
+          path: 'dist'
 
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
