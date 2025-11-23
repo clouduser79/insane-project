@@ -36,16 +36,14 @@ jobs:
           # For GitHub Pages, the base path should be the repository name
           echo "base=/insane-project/" >> $GITHUB_OUTPUT
 
-      - name: Install
-        run: npm ci
-
-      - name: Build
+      - name: Install and Build
         working-directory: frontend
         env:
           BASE_PATH: ${{ steps.basepath.outputs.base }}
         run: |
-          echo "Building with base path: $BASE_PATH"
+          echo "Installing dependencies..."
           npm ci
+          echo "Building with base path: $BASE_PATH"
           npm run build
           
       - name: Verify build output
