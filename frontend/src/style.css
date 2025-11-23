@@ -13,59 +13,6 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Palette styles */
-.palette-1 {
-  background: linear-gradient(45deg, #1a4b82, #993366, #992222, #995500, #1f593a, #1a4b82);
-  background-size: 400% 400%;
-}
-
-.palette-2 {
-  background: linear-gradient(45deg, #4b0082, #800080, #483d8b, #4682b4, #00ced1, #4b0082);
-  background-size: 400% 400%;
-}
-
-.palette-3 {
-  background: linear-gradient(45deg, #2f4f4f, #008080, #20b2aa, #48d1cc, #40e0d0, #2f4f4f);
-  background-size: 400% 400%;
-}
-
-.palette-4 {
-  background: linear-gradient(45deg, #8b4513, #d2691e, #cd853f, #daa520, #f4a460, #8b4513);
-  background-size: 400% 400%;
-}
-
-.palette-5 {
-  background: linear-gradient(45deg, #000000, #000080, #228b22, #716000, #c0c0c08e, #000000);
-  background-size: 400% 400%;
-}
-
-.palette-6 {
-  background: linear-gradient(45deg, #000000, #000080, #228b22);
-  background-size: 400% 400%;
-  animation: none;
-}
-
-.palette-7 {
-  background: linear-gradient(45deg, #6C3BAA, #4f0080, #35063E, #6C3BAA, #4f0080, #35063E);
-  background-size: 400% 400%;
-}
-
-.palette-8 {
-  background: linear-gradient(45deg, #000000, #8B0000, #B22222, #8B0000, #000000, #8B0000);
-  background-size: 400% 400%;
-}
-
-/* Animation for palettes */
-.palette-1,
-.palette-2,
-.palette-3,
-.palette-4,
-.palette-5,
-.palette-7,
-.palette-8 {
-  animation: gradient-shift 15s ease infinite;
-}
-
 @keyframes gradient-shift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -525,103 +472,6 @@ button {
   background-size: 400% 400%;
 }
 
-.sparkle-bg.palette-1 {
-  background: linear-gradient(
-    45deg,
-    #1a4b82 0%,    /* dark metallic blue */
-    #993366 20%,   /* dark metallic pink */
-    #992222 40%,   /* dark metallic red */
-    #995500 60%,   /* dark metallic orange */
-    #1f593a 80%,   /* dark metallic green */
-    #1a4b82 100%   /* back to blue */
-  );
-}
-
-.sparkle-bg.palette-2 {
-  background: linear-gradient(
-    45deg,
-    #4b0082 0%,    /* indigo */
-    #800080 20%,   /* purple */
-    #483d8b 40%,   /* dark slate blue */
-    #4682b4 60%,   /* steel blue */
-    #00ced1 80%,   /* dark turquoise */
-    #4b0082 100%   /* back to indigo */
-  );
-}
-
-.sparkle-bg.palette-3 {
-  background: linear-gradient(
-    45deg,
-    #2f4f4f 0%,    /* dark slate gray */
-    #008080 20%,   /* teal */
-    #20b2aa 40%,   /* light sea green */
-    #48d1cc 60%,   /* medium turquoise */
-    #40e0d0 80%,   /* turquoise */
-    #2f4f4f 100%   /* back to dark slate gray */
-  );
-}
-
-.sparkle-bg.palette-4 {
-  background: linear-gradient(
-    45deg,
-    #8b4513 0%,    /* saddle brown */
-    #d2691e 20%,   /* chocolate */
-    #cd853f 40%,   /* peru */
-    #daa520 60%,   /* goldenrod */
-    #f4a460 80%,   /* sandy brown */
-    #8b4513 100%   /* back to saddle brown */
-  );
-}
-
-.sparkle-bg.palette-5 {
-  background: linear-gradient(
-    45deg,
-    #000000 0%,    /* black */
-    #000080 20%,   /* navy blue */
-    #228b22 40%,   /* forest green */
-    #716000 60%,   /* gold */
-    #c0c0c08e 80%,   /* silver */
-    #000000 100%   /* back to black */
-  );
-}
-
-.sparkle-bg.palette-6 {
-  background: linear-gradient(
-    45deg,
-    #000000 0%,   /* black */
-    #000080 50%,  /* navy blue */
-    #228b22 100%  /* forest green */
-  );
-}
-
-.sparkle-bg.palette-7 {
-  background: linear-gradient(
-    45deg,
-    #6C3BAA 0%,   /* purple */
-    #4f0080 20%,  /* purple */
-    #35063E 40%,  /* purple */
-    #6C3BAA 60%,  /* purple */
-    #4f0080 80%,  /* purple */
-    #35063E 100%  /* purple */
-  );
-}
-
-.sparkle-bg.palette-8 {
-  background: linear-gradient(
-    45deg,
-    #000000 0%,    /* black */
-    #8B0000 20%,   /* dark red */
-    #B22222 40%,   /* firebrick red */
-    #8B0000 60%,   /* dark red */
-    #000000 80%,   /* black */
-    #8B0000 100%   /* dark red */
-  );
-}
-
-.sparkle-bg[class*="palette-"]:not(.palette-6) {
-  animation: spectrum-shift 15s infinite linear, color-pulse 2.5s infinite ease-in-out;
-}
-
 @keyframes spectrum-shift {
   0% {
     background-position: 0% 50%;
@@ -720,8 +570,6 @@ button {
   z-index: -1;
 }
 
-
-
 .sparkle {
   position: absolute;
   width: 8px; height: 8px;
@@ -815,13 +663,6 @@ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubun
 .container {
 position: relative;
 z-index: 1;
-}
-
-/* Palette-specific styles */
-.sparkle-bg.palette-6 .sparkle,
-.palette-6 .sparkle {
-animation: none;
-display: none;
 }
 
 /* Volume Control */

@@ -1,42 +1,41 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { SparkleBackgroundProps, SparkleConfig } from '../types';
 
-// Professional color palettes
 const PROFESSIONAL_PALETTES = [
-  // Deep Blue Professional
+  // Deep Navy Gradient
   {
-    background: 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)',
-    sparkles: ['#4da0b0', '#a8e063', '#f4d03f', '#e74c3c', '#9b59b6']
+    background: 'linear-gradient(135deg, #0a1929 0%, #1a365d 50%, #2c5282 100%)',
+    sparkles: ['#63b3ed', '#4fd1c5', '#f6ad55', '#f687b3', '#9f7aea']
   },
-  // Corporate Teal
+  // Slate Blue Gradient
   {
-    background: 'linear-gradient(135deg, #1a2980 0%, #26d0ce 100%)',
-    sparkles: ['#00b4db', '#0083b0', '#00b4db', '#00c6ff', '#00b4db']
+    background: 'linear-gradient(135deg, #1a202c 0%, #2d3748 50%, #4a5568 100%)',
+    sparkles: ['#68d391', '#f6e05e', '#f6ad55', '#f687b3', '#9f7aea']
   },
-  // Dark Elegance
+  // Deep Teal Gradient
   {
-    background: 'linear-gradient(135deg, #1e1e2f 0%, #2d2d44 100%)',
-    sparkles: ['#5d9cec', '#48cfad', '#a0d468', '#ffce54', '#ed5565']
+    background: 'linear-gradient(135deg, #1a365d 0%, #2c5282 50%, #2b6cb0 100%)',
+    sparkles: ['#90cdf4', '#63b3ed', '#f6e05e', '#f6ad55', '#f687b3']
   },
-  // Modern Purple
+  // Dark Charcoal Gradient
   {
-    background: 'linear-gradient(135deg, #4776e6 0%, #8e54e9 100%)',
-    sparkles: ['#a8ff78', '#78ffd6', '#ff8c66', '#ffb347', '#ffcc33']
+    background: 'linear-gradient(135deg, #1a202c 0%, #2d3748 50%, #4a5568 100%)',
+    sparkles: ['#f6e05e', '#f6ad55', '#f687b3', '#9f7aea', '#68d391']
   },
-  // Deep Ocean
+  // Deep Indigo Gradient
   {
-    background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
-    sparkles: ['#00c9ff', '#92fe9d', '#ff6b6b', '#ffa3b5', '#d4a5e9']
+    background: 'linear-gradient(135deg, #2d3748 0%, #4a5568 50%, #718096 100%)',
+    sparkles: ['#f6ad55', '#f687b3', '#9f7aea', '#68d391', '#4fd1c5']
   },
-  // Dark Mode (default)
+  // Cool Gray Gradient
   {
-    background: '#121212',
-    sparkles: ['#00e5ff', '#00ff9d', '#ff4d8d', '#ffc107', '#9c27b0']
+    background: 'linear-gradient(135deg, #2d3748 0%, #4a5568 50%, #718096 100%)',
+    sparkles: ['#f687b3', '#9f7aea', '#68d391', '#4fd1c5', '#63b3ed']
   }
 ];
 
 const SparkleBackground: React.FC<SparkleBackgroundProps> = ({
-  count = 60,
+  count = 62,
   defaultPalette = 0,
   forcePalette,
   startTime
@@ -63,7 +62,7 @@ const SparkleBackground: React.FC<SparkleBackgroundProps> = ({
 
   // Update palette when forcePalette or startTime changes
   useEffect(() => {
-    if (forcePalette !== undefined) {
+    if (forcePalette != undefined) {
       setCurrentPalette(forcePalette);
     } else if (startTime) {
       // Reset to default palette when presentation starts/restarts
@@ -75,30 +74,33 @@ const SparkleBackground: React.FC<SparkleBackgroundProps> = ({
   useEffect(() => {
     if (!startTime) return;
 
+    // Set initial palette immediately
+    setCurrentPalette(0);
+
     const updatePalette = () => {
       const elapsed = Date.now() - startTime;
-      let newPalette = -1; // Initialize to an invalid value to force update
+      let newPalette = 0; // Start with the first palette
 
-      if (elapsed >= 88000) {
-        newPalette = 5; // Final palette
-      } else if (elapsed >= 74000) {
+      if (elapsed >= 90000) {
+        newPalette = 6;
+      } else if (elapsed >= 75000) {
+        newPalette = 5;
+      } else if (elapsed >= 60000) {
         newPalette = 4;
-      } else if (elapsed >= 59000) {
+      } else if (elapsed >= 45000) {
         newPalette = 3;
-      } else if (elapsed >= 44000) {
+      } else if (elapsed >= 30000) {
         newPalette = 2;
-      } else if (elapsed >= 29000) {
+      } else if (elapsed >= 15000) {
         newPalette = 1;
-      } else if (elapsed >= 0) { // Changed from 15000 to 0 to cover the first interval
-        newPalette = 0;
       }
 
-      if (newPalette !== -1 && newPalette !== currentPalette) {
+      if (newPalette !== currentPalette) {
         setCurrentPalette(newPalette);
       }
     };
 
-    const interval = setInterval(updatePalette, 1000); // Check every second
+    const interval = setInterval(updatePalette);
     updatePalette(); // Initial check
 
     return () => clearInterval(interval);
