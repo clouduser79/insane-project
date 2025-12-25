@@ -12,7 +12,7 @@ const App: React.FC = () => {
   const [fade, setFade] = useState(true);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [showImageWarning, setShowImageWarning] = useState(false);
-  const [cycleSpeed, setCycleSpeed] = useState(1000);
+  const [cycleSpeed] = useState(1000);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [audioPlayer, setAudioPlayer] = useState<{
@@ -149,32 +149,6 @@ const App: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-
-  // Handle cycle speed changes based on elapsed time
-  useEffect(() => {
-    if (!startTime) return;
-
-    const check = () => {
-      const elapsed = Date.now() - startTime;
-      if (elapsed >= 88000) {
-        setCycleSpeed(1000);
-      } else if (elapsed >= 74000) {
-        setCycleSpeed(500);
-      } else if (elapsed >= 59000) {
-        setCycleSpeed(1000);
-      } else if (elapsed >= 44000) {
-        setCycleSpeed(500);
-      } else if (elapsed >= 29000) {
-        setCycleSpeed(1000);
-      } else if (elapsed >= 15000) {
-        setCycleSpeed(500);
-      }
-    };
-
-    const id = window.setInterval(check, 250);
-    check();
-    return () => clearInterval(id);
-  }, [startTime]);
 
   // Handle image cycling
   useEffect(() => {
