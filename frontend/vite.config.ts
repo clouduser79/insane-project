@@ -5,9 +5,9 @@ export default defineConfig(({ mode }) => {
   // Load environment variables based on the current mode
   const env = loadEnv(mode, process.cwd(), '')
   
-  // Use the BASE_PATH environment variable if it exists, otherwise use '/insane-project/'
+  // Use the BASE_PATH environment variable if it exists, otherwise use '/web_player/'
   // This will be set in the GitHub Actions workflow
-  const base = env.BASE_PATH || '/insane-project/'
+  const base = env.BASE_PATH || '/web_player/'
   
   return {
     base,
