@@ -1,10 +1,7 @@
 import React from 'react';
-import type { ChangeEvent, KeyboardEvent } from 'react';
-import { AVAILABLE_SONGS, MAX_IMAGES } from '../constants/songs';
+import type { ChangeEvent } from 'react';
 
 interface ImageUploadFormProps {
-  name: string;
-  setName: (name: string) => void;
   uploadedImages: string[];
   setUploadedImages: (images: string[]) => void;
   showImageWarning: boolean;
@@ -14,11 +11,13 @@ interface ImageUploadFormProps {
   setSelectedSong: (song: string) => void;
   fileInputRef: React.RefObject<HTMLInputElement>;
   isSubmitting: boolean;
+  uploadedAudio: string | null;
+  setUploadedAudio: (audio: string | null) => void;
+  audioInputRef: React.RefObject<HTMLInputElement>;
+  setImageName: (name: string) => void;
 }
 
 const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
-  name,
-  setName,
   uploadedImages,
   setUploadedImages,
   showImageWarning,
@@ -28,6 +27,10 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
   setSelectedSong,
   fileInputRef,
   isSubmitting,
+  uploadedAudio,
+  setUploadedAudio,
+  audioInputRef,
+  setImageName,
 }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,93 +38,93 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
       setShowImageWarning(true);
       return;
     }
-    if (uploadedImages.length < 2) {
-      alert('Please upload at least 2 images.');
-      return;
-    }
     onSubmit(e);
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && name.trim()) {
-      handleSubmit(e as unknown as React.FormEvent);
-    }
   };
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    
-    const selected = Array.from(files);
-    const newTotal = uploadedImages.length + selected.length;
-    
-    if (newTotal > MAX_IMAGES) {
-      alert(`You can upload up to ${MAX_IMAGES} images. Your selections have been cleared.`);
-      setUploadedImages([]);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
-    }
 
-    const limit = MAX_IMAGES - uploadedImages.length;
-    const fileArr = selected.slice(0, limit);
-    const readers = fileArr.map(file => {
-      return new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    });
-    
-    Promise.all(readers).then((imgs: string[]) => {
-      const newImages = [...uploadedImages, ...imgs];
-      setUploadedImages(newImages.slice(0, MAX_IMAGES));
-    });
-    
+    const file = files[0];
+    setImageName(file.name);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setUploadedImages([reader.result as string]);
+    };
+    reader.onerror = () => {
+      alert('Error reading image file.');
+    };
+    reader.readAsDataURL(file);
+
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  const handleSongChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setSelectedSong(e.target.value);
+  const handleAudioUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    if (file.type !== 'audio/mpeg' && file.type !== 'audio/mp3') {
+      alert('Please upload an MP3 file.');
+      if (audioInputRef.current) audioInputRef.current.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setUploadedAudio(reader.result as string);
+      setSelectedSong(file.name);
+    };
+    reader.onerror = () => {
+      alert('Error reading audio file.');
+    };
+    reader.readAsDataURL(file);
+
+    if (audioInputRef.current) {
+      audioInputRef.current.value = '';
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="upload-form">
-      <div className="form-group">
-        <input
-          id="name"
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="form-input"
-          placeholder="Enter a message (optional): "
-          required={false}
-          disabled={isSubmitting}
-        />
-      </div>
-
-      <div className="form-group">
-        <label className="form-label">Select a Song: </label>
-        <select
-          value={selectedSong}
-          onChange={handleSongChange}
-          className="form-select"
-          required
-          disabled={isSubmitting}
-        >
-          <option value="">-- Select a song --</option>
-          {AVAILABLE_SONGS.map((song) => (
-            <option key={song} value={song}>
-              {song}
-            </option>
-          ))}
-        </select>
+      <div className="form-group" style={{ marginTop: '1.5rem' }}>
+        <label className="form-label">Upload an MP3 file: </label>
+        <div className="file-upload-container">
+          <input
+            type="file"
+            ref={audioInputRef}
+            onChange={handleAudioUpload}
+            className="file-input"
+            accept="audio/mp3, audio/mpeg"
+            disabled={isSubmitting}
+            style={{ display: 'none' }}
+          />
+          <div 
+            className="file-input-label"
+            onClick={() => audioInputRef.current?.click()}
+            style={{
+              border: '2px dashed #646cff',
+              borderRadius: '8px',
+              padding: '1.5rem',
+              textAlign: 'center',
+              cursor: 'pointer',
+              backgroundColor: 'rgba(100, 108, 255, 0.1)'
+            }}
+          >
+            <p style={{ margin: '0', color: '#646cff' }}>Click to upload MP3 file</p>
+          </div>
+          {uploadedAudio && (
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>
+              Audio file selected: {selectedSong}
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="form-group" style={{ marginTop: '1.5rem' }}>
+        <label className="form-label">Upload an image: </label>
         <div className="file-upload-container">
           <input
             type="file"
@@ -129,8 +132,6 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
             onChange={handleImageUpload}
             className="file-input"
             accept="image/*"
-            multiple
-            // Required validation is handled in the parent component
             disabled={isSubmitting}
             style={{ display: 'none' }}
           />
@@ -143,43 +144,22 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
               padding: '1.5rem',
               textAlign: 'center',
               cursor: 'pointer',
-              margin: '0.5rem 0',
               backgroundColor: 'rgba(100, 108, 255, 0.1)'
             }}
           >
-            <p style={{ margin: '0', color: '#646cff' }}>Click to upload images (Max {MAX_IMAGES})</p>
+            <p style={{ margin: '0', color: '#646cff' }}>Click to upload image</p>
             <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', opacity: 0.8 }}>Supports JPG, PNG, GIF</p>
           </div>
           {uploadedImages.length > 0 && (
             <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>
-              {uploadedImages.length} image{uploadedImages.length !== 1 ? 's' : ''} selected
+              Image selected
             </p>
           )}
         </div>
         {showImageWarning && (
           <p className="warning-message">
-            Maximum {MAX_IMAGES} images allowed. Some images were not uploaded.
+            Please upload an image.
           </p>
-        )}
-        
-        {uploadedImages.length > 0 && (
-          <div className="preview-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
-            {uploadedImages.map((img, index) => (
-              <img 
-                key={index} 
-                src={img} 
-                alt={`Preview ${index + 1}`}
-                className="preview-image"
-                style={{
-                  width: '60px',
-                  height: '60px',
-                  objectFit: 'cover',
-                  borderRadius: '4px',
-                  border: '1px solid #ddd'
-                }}
-              />
-            ))}
-          </div>
         )}
       </div>
 
@@ -187,6 +167,7 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({
         type="submit" 
         className="submit-button"
         disabled={isSubmitting}
+        style={{ backgroundColor: '#646cff', color: 'white', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '8px', cursor: 'pointer' }}
       >
         {isSubmitting ? 'Starting...' : 'Start Presentation'}
       </button>

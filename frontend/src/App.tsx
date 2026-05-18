@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import SparkleBackground from './components/SparkleBackground';
 import ImageUploadForm from './components/ImageUploadForm';
 import ImagePresentation from './components/ImagePresentation';
 import VolumeControl from './components/VolumeControl';
-import { createAudioPlayer, getRandomSong } from './utils/audioPlayer';
+import { createAudioPlayer} from './utils/audioPlayer';
 
 const App: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isStarted, setIsStarted] = useState(false);
-  const [name, setName] = useState('');
   const [fade, setFade] = useState(true);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [uploadedAudio, setUploadedAudio] = useState<string | null>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const [imageName, setImageName] = useState<string>('');
+  const [backgroundColor, setBackgroundColor] = useState<string>('#1a1a2e');
+  const [secondaryColor, setSecondaryColor] = useState<string>('#16213e');
   const [showImageWarning, setShowImageWarning] = useState(false);
   const [cycleSpeed] = useState(1000);
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -21,7 +24,6 @@ const App: React.FC = () => {
     source: AudioBufferSourceNode;
     setVolume: (volume: number) => void;
   } | null>(null);
-  const [forcePalette, setForcePalette] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentSong, setCurrentSong] = useState<string>('');
   const [selectedSong, setSelectedSong] = useState<string>('');
@@ -36,6 +38,52 @@ const App: React.FC = () => {
     allImagesRef.current = [...uploadedImages];
   }, [uploadedImages]);
 
+  // Extract colors from uploaded image
+  useEffect(() => {
+    if (uploadedImages.length > 0) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+
+        // Sample colors from the image
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        
+        // Simple color extraction: get average color
+        let r = 0, g = 0, b = 0;
+        const sampleSize = 1000; // Sample every nth pixel for performance
+        let count = 0;
+
+        for (let i = 0; i < data.length; i += 4 * sampleSize) {
+          r += data[i];
+          g += data[i + 1];
+          b += data[i + 2];
+          count++;
+        }
+
+        r = Math.floor(r / count);
+        g = Math.floor(g / count);
+        b = Math.floor(b / count);
+
+        // Create a darker version for secondary color
+        const secondaryR = Math.max(0, r - 40);
+        const secondaryG = Math.max(0, g - 40);
+        const secondaryB = Math.max(0, b - 40);
+
+        setBackgroundColor(`rgb(${r}, ${g}, ${b})`);
+        setSecondaryColor(`rgb(${secondaryR}, ${secondaryG}, ${secondaryB})`);
+      };
+      img.src = uploadedImages[0];
+    }
+  }, [uploadedImages]);
+
   useEffect(() => {
     cycleSpeedRef.current = cycleSpeed;
   }, [cycleSpeed]);
@@ -43,18 +91,33 @@ const App: React.FC = () => {
   const resetForm = () => {
     setUploadedImages([]);
     setSelectedSong('');
-    setName('');
+    setUploadedAudio(null);
     setShowImageWarning(false);
     setCurrentIndex(0);
     setFade(true);
     setIsSubmitting(false);
+    setBackgroundColor('#1a1a2e');
+    setSecondaryColor('#16213e');
+    setImageName('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+    if (audioInputRef.current) {
+      audioInputRef.current.value = '';
     }
   };
 
   const handleEnd = () => {
-    setForcePalette(6);
+    // Stop the audio immediately
+    if (audioPlayer) {
+      try {
+        audioPlayer.source.stop();
+        audioPlayer.context.close();
+      } catch (e) {
+        console.warn('Error stopping audio:', e);
+      }
+      setAudioPlayer(null);
+    }
     setStartTime(null);
     setIsStarted(false);
     resetForm();
@@ -86,23 +149,19 @@ const App: React.FC = () => {
     e.preventDefault();
     setShowImageWarning(false);
 
-    // Set a default name if empty
-    const displayName = name.trim() || 'No message provided';
-    setName(displayName);
-    
     if (uploadedImages.length === 0) {
       setShowImageWarning(true);
       return;
     }
-    if (uploadedImages.length < 2) {
-      alert('Please upload at least 2 images.');
+    if (!uploadedAudio) {
+      alert('Please upload an MP3 file.');
       return;
     }
     
     try {
       console.log('Starting presentation...');
       setIsSubmitting(true);
-      const songToPlay = selectedSong || getRandomSong();
+      const songToPlay = selectedSong;
       console.log('Selected song:', songToPlay);
       
       // Clean up previous audio player if it exists
@@ -122,12 +181,12 @@ const App: React.FC = () => {
           songName: songToPlay,
           setCurrentSong,
           initialVolume: volume,
+          audioDataUrl: uploadedAudio,
         });
         
         if (player) {
           console.log('Audio player created successfully');
           setAudioPlayer(player);
-          setForcePalette(null);
           const now = Date.now();
           console.log('Setting start time to:', now);
           setStartTime(now);
@@ -208,18 +267,28 @@ const App: React.FC = () => {
   if (!isStarted) {
     return (
       <>
-        <SparkleBackground startTime={startTime} defaultPalette={0} forcePalette={0} />
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: `linear-gradient(135deg, ${backgroundColor} 0%, ${secondaryColor} 100%)`,
+            zIndex: -10,
+            margin: 0,
+            padding: 0,
+          }}
+        />
         <div className="volume-control-container">
-          <VolumeControl 
+          <VolumeControl
             volume={volume}
             onVolumeChange={handleVolumeChange}
           />
         </div>
         <main className="container intro">
-          <h1>Upload images to make a presentation with music and effects!</h1>
+          <h1>React Web Player</h1>
           <ImageUploadForm
-            name={name}
-            setName={setName}
             uploadedImages={uploadedImages}
             setUploadedImages={setUploadedImages}
             showImageWarning={showImageWarning}
@@ -229,6 +298,10 @@ const App: React.FC = () => {
             setSelectedSong={setSelectedSong}
             fileInputRef={fileInputRef as React.RefObject<HTMLInputElement>}
             isSubmitting={isSubmitting}
+            uploadedAudio={uploadedAudio}
+            setUploadedAudio={setUploadedAudio}
+            audioInputRef={audioInputRef as React.RefObject<HTMLInputElement>}
+            setImageName={setImageName}
           />
         </main>
       </>
@@ -237,13 +310,22 @@ const App: React.FC = () => {
 
   return (
     <div className="app">
-      <SparkleBackground 
-        startTime={startTime} 
-        forcePalette={forcePalette ?? undefined} 
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: `linear-gradient(135deg, ${backgroundColor} 0%, ${secondaryColor} 100%)`,
+          zIndex: -10,
+          margin: 0,
+          padding: 0,
+        }}
       />
       {isStarted && (
         <div className="volume-control-container">
-          <VolumeControl 
+          <VolumeControl
             volume={volume}
             onVolumeChange={handleVolumeChange}
           />
@@ -253,9 +335,9 @@ const App: React.FC = () => {
         allImages={[...uploadedImages]}
         currentIndex={currentIndex}
         fade={fade}
-        name={name}
-        currentSong={currentSong}
-        audioError={audioError}
+        currentSong={selectedSong}
+        onStop={handleEnd}
+        imageName={imageName}
       />
     </div>
   );

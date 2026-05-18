@@ -4,45 +4,68 @@ interface ImagePresentationProps {
   allImages: string[];
   currentIndex: number;
   fade: boolean;
-  name: string;
   currentSong: string;
-  audioError: string | null;
+  onStop: () => void;
+  imageName: string;
 }
 
 const ImagePresentation: React.FC<ImagePresentationProps> = ({
   allImages,
   currentIndex,
   fade,
-  name,
   currentSong,
-  audioError,
+  onStop,
+  imageName,
 }) => {
-  if (allImages.length === 0) {
-    return (
-      <div className="presentation-container">
-        <div className="no-images">No images to display</div>
-      </div>
-    );
-  }
 
   return (
     <div className="presentation-container">
-      <div className={`image-container ${fade ? 'fade' : ''}`}>
-        {/* Info overlay in top left */}
-        <div className="info-overlay">
-          <div className="image-counter">
-            Image {(currentIndex % allImages.length) + 1} of {allImages.length}
+      {/* Control buttons in top left */}
+      <div style={{
+        position: 'fixed',
+        top: '20px',
+        left: '20px',
+        zIndex: 1000,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+      }}>
+        <button
+          onClick={onStop}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#ff4444',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 'bold',
+          }}
+        >
+          Stop & Return Home
+        </button>
+        <div style={{
+          padding: '15px',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          borderRadius: '5px',
+          color: 'white',
+          fontSize: '14px',
+          minWidth: '200px',
+          maxWidth: '250px',
+          wordWrap: 'break-word',
+          overflowWrap: 'break-word',
+        }}>
+          <div style={{ marginBottom: '8px' }}>
+            <strong>Image:</strong> {imageName || 'No image selected'}
           </div>
-          {name && <div className="presentation-name">{name}</div>}
-          {currentSong && (
-            <div className="presentation-song">
-              <div className="now-playing-label">Now Playing:</div>
-              <div className="song-name">{currentSong.replace('.mp3', '')}</div>
-            </div>
-          )}
-          {audioError && <div className="error-message">{audioError}</div>}
+          <div>
+            <strong>Song:</strong> {currentSong || 'No song selected'}
+          </div>
         </div>
-        
+      </div>
+
+      <div className={`image-container ${fade ? 'fade' : ''}`}>
         {/* Main image */}
         <img
           src={allImages[currentIndex % allImages.length]}

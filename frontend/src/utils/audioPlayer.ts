@@ -1,15 +1,8 @@
-import { AVAILABLE_SONGS } from '../constants/songs';
-
 type AudioPlayer = {
   context: AudioContext;
   gainNode: GainNode;
   source: AudioBufferSourceNode;
   setVolume: (volume: number) => void;
-};
-
-export const getRandomSong = (): string => {
-  const randomIndex = Math.floor(Math.random() * AVAILABLE_SONGS.length);
-  return AVAILABLE_SONGS[randomIndex];
 };
 
 export const createAudioPlayer = async ({
@@ -18,12 +11,14 @@ export const createAudioPlayer = async ({
   songName = '',
   setCurrentSong,
   initialVolume = 0.5,
+  audioDataUrl = null,
 }: {
   onEnd: () => void;
   setAudioError: (msg: string | null) => void;
   songName?: string;
   setCurrentSong: (song: string) => void;
   initialVolume?: number;
+  audioDataUrl?: string | null;
 }): Promise<AudioPlayer | null> => {
   try {
     try {
@@ -31,48 +26,67 @@ export const createAudioPlayer = async ({
       const gainNode = ctx.createGain();
       gainNode.gain.value = initialVolume;
       gainNode.connect(ctx.destination);
-      
-      const base = (import.meta as any).env?.BASE_URL || '/';
-      const songToPlay = songName || getRandomSong();
-      setCurrentSong(songToPlay);
-      
-      const candidates = [
-        `${base}static/${songToPlay}`,
-        `${base}${songToPlay}`,
-        `./static/${songToPlay}`,
-        `/${songToPlay}`,
-        songToPlay
-      ];
-      
-      let response: Response | null = null;
-      for (const url of candidates) {
-        try {
-          const r = await fetch(url);
-          if (r.ok) { 
-            response = r; 
-            break; 
-          }
-        } catch (_) {}
+
+      let arrayBuffer: ArrayBuffer;
+
+      if (audioDataUrl) {
+        // Use the uploaded audio data URL
+        const response = await fetch(audioDataUrl);
+        if (!response.ok) throw new Error('Could not load uploaded audio');
+        arrayBuffer = await response.arrayBuffer();
+      } else {
+        // Fallback to static files
+        const base = (import.meta as any).env?.BASE_URL || '/';
+        const songToPlay = songName;
+        setCurrentSong(songToPlay);
+
+        const candidates = [
+          `${base}static/${songToPlay}`,
+          `${base}${songToPlay}`,
+          `./static/${songToPlay}`,
+          `/${songToPlay}`,
+          songToPlay
+        ];
+
+        let response: Response | null = null;
+        for (const url of candidates) {
+          try {
+            const r = await fetch(url);
+            if (r.ok) {
+              response = r;
+              break;
+            }
+          } catch (_) {}
+        }
+
+        if (!response) throw new Error('Could not load music file');
+        arrayBuffer = await response.arrayBuffer();
       }
-      
-      if (!response) throw new Error('Could not load music file');
 
-      const arrayBuffer = await response.arrayBuffer();
       const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-      const source = ctx.createBufferSource();
-      
-      source.buffer = audioBuffer;
-      source.connect(gainNode);
-      source.start(0);
+      let playCount = 0;
 
-      source.onended = () => {
-        console.log('Music finished playing.');
-        ctx.close();
-        onEnd();
+      const playAudio = () => {
+        const source = ctx.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(gainNode);
+        source.start(0);
+
+        source.onended = () => {
+          playCount++;
+          console.log(`Music finished playing. Play count: ${playCount} (infinite loop)`);
+          
+          // Play again infinitely
+          playAudio();
+        };
+
+        return source;
       };
 
+      const source = playAudio();
+
       setAudioError(null);
-      
+
       return {
         context: ctx,
         gainNode,
