@@ -63,7 +63,7 @@ A modern web application for displaying images with custom background music. Upl
 
 ## Recent Changes
 
-### Version 1.0.0 (May 17, 2026)
+### v1.0.2 (May 17, 2026)
 
 **Major Updates:**
 - Renamed application to "React Web Player"
