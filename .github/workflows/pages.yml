@@ -34,7 +34,7 @@ jobs:
         id: basepath
         run: |
           # For GitHub Pages, the base path should be the repository name
-          echo "base=/insane-project/" >> $GITHUB_OUTPUT
+          echo "base=/web-player/" >> $GITHUB_OUTPUT
 
       - name: Install and Build
         working-directory: frontend
